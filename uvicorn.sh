@@ -22,5 +22,8 @@ except Exception as e:
     print(f'Erro ao verificar o usuário admin: {e}')
 "
 
+echo "Verificando e criando as tabelas do banco de dados..."
+python create_tables.py
+
 # Inicia o servidor Uvicorn após a verificação/criação do usuário.
 uvicorn main:app --host 0.0.0.0 --port $PORT
