@@ -31,6 +31,7 @@ class Piloto(BaseModel):
     nome: str
     equipe: str
     foto: str | None = None
+    ativo: bool = True
 
 class Corrida(BaseModel):
     nome: str
@@ -53,7 +54,8 @@ def listar_pilotos():
         conn = get_db_connection()
         cur = conn.cursor()
         
-        cur.execute("SELECT id, nome, equipe, foto FROM pilotos;")
+        # Altere a query para buscar a coluna 'ativo' e filtrar por ela
+        cur.execute("SELECT id, nome, equipe, foto, ativo FROM pilotos WHERE ativo = TRUE;")
         pilotos_db = cur.fetchall()
         
         pilotos = []
@@ -62,7 +64,8 @@ def listar_pilotos():
                 "id": piloto_db[0],
                 "nome": piloto_db[1],
                 "equipe": piloto_db[2],
-                "foto": piloto_db[3]
+                "foto": piloto_db[3],
+                "ativo": piloto_db[4] # Adicione esta linha
             })
             
         cur.close()
@@ -250,9 +253,10 @@ def adicionar_piloto(piloto: Piloto, current_user: Annotated[dict, Depends(get_c
         conn = get_db_connection()
         cur = conn.cursor()
         
+        # Atualize o INSERT para incluir o campo 'ativo'
         cur.execute(
-            "INSERT INTO pilotos (nome, equipe, foto) VALUES (%s, %s, %s) RETURNING id;",
-            (piloto.nome, piloto.equipe, piloto.foto)
+            "INSERT INTO pilotos (nome, equipe, foto, ativo) VALUES (%s, %s, %s, %s) RETURNING id;",
+            (piloto.nome, piloto.equipe, piloto.foto, piloto.ativo)
         )
         
         piloto_id = cur.fetchone()[0]
@@ -275,9 +279,10 @@ def atualizar_piloto(piloto_id: int, piloto: Piloto, current_user: Annotated[dic
         conn = get_db_connection()
         cur = conn.cursor()
 
+        # Atualize o UPDATE para incluir o campo 'ativo'
         cur.execute(
-            "UPDATE pilotos SET nome = %s, equipe = %s, foto = %s WHERE id = %s;",
-            (piloto.nome, piloto.equipe, piloto.foto, piloto_id)
+            "UPDATE pilotos SET nome = %s, equipe = %s, foto = %s, ativo = %s WHERE id = %s;",
+            (piloto.nome, piloto.equipe, piloto.foto, piloto.ativo, piloto_id)
         )
 
         if cur.rowcount == 0:
